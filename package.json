@@ -1,0 +1,17 @@
+{
+  "name": "projectflow",
+  "version": "1.0.0",
+  "description": "Project Management Tool",
+  "main": "app.js",
+  "scripts": {
+    "dev": "npx serve -s . -l 3000",
+    "start": "npx serve -s . -l 3000",
+    "build": "echo 'No build process needed for vanilla JS project'"
+  },
+  "keywords": ["project-management", "tasks", "calendar"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}

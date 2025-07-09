@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProjectFlow - Project Management Tool</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header__content">
+            <h1 class="header__title">ProjectFlow</h1>
+            <div class="header__actions">
+                <div class="search-container">
+                    <input type="text" class="form-control search-input" placeholder="Search projects and tasks..." id="globalSearch">
+                </div>
+                <button class="btn btn--outline btn--sm theme-toggle" id="themeToggle">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <div class="user-profile">
+                    <span class="user-name">Welcome, Dicky</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <button class="nav-link active" data-view="dashboard">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-view="projects">
+                        <span class="nav-icon">📁</span>
+                        Projects
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-view="tasks">
+                        <span class="nav-icon">✓</span>
+                        Tasks
+                    </button>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <div class="view dashboard-view active" id="dashboardView">
+                <div class="view-header">
+                    <h2>Dashboard</h2>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalProjects">0</div>
+                        <div class="stat-label">Total Projects</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="activeTasks">0</div>
+                        <div class="stat-label">Active Tasks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="completedTasks">0</div>
+                        <div class="stat-label">Completed Tasks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="tasksDueToday">0</div>
+                        <div class="stat-label">Due Today</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-sections">
+                    <div class="dashboard-section">
+                        <h3>Recent Activity</h3>
+                        <div class="activity-feed" id="activityFeed">
+                            <!-- Activity items will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-section">
+                        <h3>Quick Actions</h3>
+                        <div class="quick-actions">
+                            <button class="btn btn--primary" id="quickAddProject">+ New Project</button>
+                            <button class="btn btn--secondary" id="quickAddTask">+ New Task</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-section calendar-section">
+                    <div class="calendar-header-controls">
+                        <h3>Task Calendar</h3>
+                        <div class="calendar-navigation">
+                            <button class="btn btn--outline btn--sm" id="prevMonth">‹</button>
+                            <span class="calendar-month-year" id="calendarMonthYear"></span>
+                            <button class="btn btn--outline btn--sm" id="nextMonth">›</button>
+                        </div>
+                    </div>
+                    <div class="calendar-container" id="calendarContainer">
+                        <!-- Calendar will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects View -->
+            <div class="view projects-view" id="projectsView">
+                <div class="view-header">
+                    <h2>Projects</h2>
+                    <button class="btn btn--primary" id="addProjectBtn">+ Add Project</button>
+                </div>
+                
+                <div class="projects-grid" id="projectsGrid">
+                    <!-- Projects will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Tasks View -->
+            <div class="view tasks-view" id="tasksView">
+                <div class="view-header">
+                    <h2>Tasks</h2>
+                    <div class="view-controls">
+                        <div class="task-filters">
+                            <select class="form-control" id="filterProject">
+                                <option value="">All Projects</option>
+                            </select>
+                            <select class="form-control" id="filterPriority">
+                                <option value="">All Priorities</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                            <select class="form-control" id="filterStatus">
+                                <option value="">All Status</option>
+                                <option value="todo">To Do</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="view-toggles">
+                            <button class="btn btn--outline btn--sm view-toggle active" data-view-type="list">List</button>
+                            <button class="btn btn--outline btn--sm view-toggle" data-view-type="kanban">Kanban</button>
+                        </div>
+                        <button class="btn btn--primary" id="addTaskBtn">+ Add Task</button>
+                    </div>
+                </div>
+
+                <!-- List View -->
+                <div class="task-list-view" id="taskListView">
+                    <div class="tasks-container" id="tasksContainer">
+                        <!-- Tasks will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Kanban View -->
+                <div class="kanban-view hidden" id="kanbanView">
+                    <div class="kanban-board">
+                        <div class="kanban-column">
+                            <h3 class="kanban-column-title">To Do</h3>
+                            <div class="kanban-column-content" id="todoColumn">
+                                <!-- Tasks will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="kanban-column">
+                            <h3 class="kanban-column-title">In Progress</h3>
+                            <div class="kanban-column-content" id="inProgressColumn">
+                                <!-- Tasks will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="kanban-column">
+                            <h3 class="kanban-column-title">Completed</h3>
+                            <div class="kanban-column-content" id="completedColumn">
+                                <!-- Tasks will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Project Modal -->
+    <div class="modal-overlay" id="projectModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="projectModalTitle">Add Project</h3>
+                <button class="modal-close" id="closeProjectModal">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="projectForm">
+                    <div class="form-group">
+                        <label class="form-label" for="projectName">Project Name</label>
+                        <input type="text" class="form-control" id="projectName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="projectDescription">Description</label>
+                        <textarea class="form-control" id="projectDescription" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="projectStatus">Status</label>
+                        <select class="form-control" id="projectStatus">
+                            <option value="active">Active</option>
+                            <option value="completed">Completed</option>
+                            <option value="on-hold">On Hold</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="projectDueDate">Due Date</label>
+                        <input type="date" class="form-control" id="projectDueDate">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn--secondary" id="cancelProjectModal">Cancel</button>
+                <button type="submit" class="btn btn--primary" id="saveProject">Save Project</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="taskModalTitle">Add Task</h3>
+                <button class="modal-close" id="closeTaskModal">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <div class="form-group">
+                        <label class="form-label" for="taskTitle">Task Title</label>
+                        <input type="text" class="form-control" id="taskTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskDescription">Description</label>
+                        <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskProject">Project</label>
+                        <select class="form-control" id="taskProject" required>
+                            <option value="">Select Project</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskPriority">Priority</label>
+                        <select class="form-control" id="taskPriority">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskStatus">Status</label>
+                        <select class="form-control" id="taskStatus">
+                            <option value="todo">To Do</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskDueDate">Due Date</label>
+                        <input type="date" class="form-control" id="taskDueDate">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn--secondary" id="cancelTaskModal">Cancel</button>
+                <button type="submit" class="btn btn--primary" id="saveTask">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
