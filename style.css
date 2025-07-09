@@ -820,12 +820,21 @@ select.form-control {
 }
 
 .task-filters .form-control {
-  width: 150px;
+  max-width: 150px;
+  width: 100%;
+  min-width: 120px;
 }
 
 .view-toggles {
   display: flex;
   gap: var(--space-4);
+}
+
+.view-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  flex-wrap: wrap;
 }
 
 .view-toggle.active {
@@ -1613,6 +1622,13 @@ select.form-control {
   border-radius: var(--radius-sm);
 }
 
+/* Responsive button sizing for Tasks tab */
+.btn-tasks-width {
+  max-width: 200px;
+  width: 100%;
+  min-width: 120px;
+}
+
 /* Tasks Styles */
 .tasks-container {
   display: flex;
@@ -2044,6 +2060,21 @@ select.form-control {
   
   .task-filters {
     flex-wrap: wrap;
+    gap: var(--space-6);
+  }
+  
+  .task-filters .form-control {
+    min-width: 100px;
+    flex: 1;
+  }
+  
+  .view-toggles {
+    justify-content: center;
+  }
+  
+  .btn-tasks-width {
+    max-width: none;
+    width: 100%;
   }
 
   .calendar-body {
