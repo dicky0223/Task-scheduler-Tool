@@ -673,35 +673,279 @@ class ProjectManager {
         projectsGrid.innerHTML = this.projects.map(project => {
             const projectTasks = this.tasks.filter(task => task.projectId === project.id);
             const completedTasks = projectTasks.filter(task => task.status === 'completed').length;
+            const inProgressTasks = projectTasks.filter(task => task.status === 'in-progress').length;
+            const todoTasks = projectTasks.filter(task => task.status === 'todo').length;
             const progress = projectTasks.length > 0 ? Math.round((completedTasks / projectTasks.length) * 100) : 0;
             
+            // Get overdue tasks
+            const today = new Date().toISOString().split('T')[0];
+            const overdueTasks = projectTasks.filter(task => 
+                task.dueDate < today && task.status !== 'completed'
+            ).length;
+            
+            // Get upcoming tasks (due within 7 days)
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            const upcomingTasks = projectTasks.filter(task => {
+                const taskDate = new Date(task.dueDate);
+                const todayDate = new Date(today);
+                return taskDate >= todayDate && taskDate <= nextWeek && task.status !== 'completed';
+            }).length;
+            
             return `
-                <div class="project-card" onclick="projectManager.editProject('${project.id}')">
+                <div class="project-card enhanced-project-card" data-project-id="${project.id}">
                     <div class="project-header">
-                        <h3 class="project-name">${project.name}</h3>
-                        <span class="project-status ${project.status}">${project.status}</span>
+                        <div class="project-title-section">
+                            <div class="project-status-indicator ${project.status}"></div>
+                            <h3 class="project-name">${project.name}</h3>
+                            <button class="project-expand-btn" onclick="projectManager.toggleProjectExpansion('${project.id}')">
+                                <span class="expand-icon">▼</span>
+                            </button>
+                        </div>
+                        <div class="project-status-badge">
+                            <span class="project-status ${project.status}">${this.formatStatus(project.status)}</span>
+                        </div>
                     </div>
-                    <p class="project-description">${project.description}</p>
-                    <div class="project-meta">
-                        <span>Due: ${this.formatDate(project.dueDate)}</span>
-                        <span>${projectTasks.length} tasks</span>
+                    
+                    <div class="project-summary">
+                        <p class="project-description">${project.description}</p>
+                        
+                        <div class="project-stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-number">${projectTasks.length}</span>
+                                <span class="stat-label">Total Tasks</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">${completedTasks}</span>
+                                <span class="stat-label">Completed</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">${inProgressTasks}</span>
+                                <span class="stat-label">In Progress</span>
+                            </div>
+                            <div class="stat-item ${overdueTasks > 0 ? 'stat-warning' : ''}">
+                                <span class="stat-number">${overdueTasks}</span>
+                                <span class="stat-label">Overdue</span>
+                            </div>
+                        </div>
+                        
+                        <div class="project-timeline">
+                            <div class="timeline-item">
+                                <span class="timeline-label">Due Date:</span>
+                                <span class="timeline-value ${this.isOverdue(project.dueDate) ? 'overdue' : ''}">${this.formatDate(project.dueDate)}</span>
+                            </div>
+                            ${upcomingTasks > 0 ? `
+                                <div class="timeline-item upcoming">
+                                    <span class="timeline-label">Upcoming:</span>
+                                    <span class="timeline-value">${upcomingTasks} tasks due this week</span>
+                                </div>
+                            ` : ''}
+                        </div>
                     </div>
+                    
                     <div class="project-progress">
                         <div class="progress-label">
                             <span>Progress</span>
                             <span>${progress}%</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progress}%"></div>
+                            <div class="progress-fill ${this.getProgressColor(progress)}" style="width: ${progress}%"></div>
                         </div>
                     </div>
+                    
                     <div class="project-actions">
-                        <button class="btn btn--outline btn-icon" onclick="event.stopPropagation(); projectManager.editProject('${project.id}')">✏️</button>
-                        <button class="btn btn--outline btn-icon" onclick="event.stopPropagation(); projectManager.deleteProject('${project.id}')">🗑️</button>
+                        <button class="btn btn--outline btn--sm" onclick="event.stopPropagation(); projectManager.editProject('${project.id}')">
+                            <span class="btn-icon">✏️</span> Edit
+                        </button>
+                        <button class="btn btn--outline btn--sm" onclick="event.stopPropagation(); projectManager.addTaskToProject('${project.id}')">
+                            <span class="btn-icon">➕</span> Add Task
+                        </button>
+                        <button class="btn btn--outline btn--sm btn-danger" onclick="event.stopPropagation(); projectManager.deleteProject('${project.id}')">
+                            <span class="btn-icon">🗑️</span> Delete
+                        </button>
+                    </div>
+                    
+                    <!-- Expandable Task Section -->
+                    <div class="project-tasks-section" id="tasks-${project.id}" style="display: none;">
+                        <div class="tasks-header">
+                            <h4>Project Tasks</h4>
+                            <div class="task-status-filters">
+                                <button class="status-filter active" data-status="all" onclick="projectManager.filterProjectTasks('${project.id}', 'all')">All</button>
+                                <button class="status-filter" data-status="todo" onclick="projectManager.filterProjectTasks('${project.id}', 'todo')">To Do</button>
+                                <button class="status-filter" data-status="in-progress" onclick="projectManager.filterProjectTasks('${project.id}', 'in-progress')">In Progress</button>
+                                <button class="status-filter" data-status="completed" onclick="projectManager.filterProjectTasks('${project.id}', 'completed')">Completed</button>
+                            </div>
+                        </div>
+                        <div class="project-tasks-list">
+                            ${this.renderProjectTasks(projectTasks, project.id)}
+                        </div>
                     </div>
                 </div>
             `;
         }).join('');
+        
+        // Add click listeners for project expansion
+        document.querySelectorAll('.enhanced-project-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.project-actions') && !e.target.closest('.project-expand-btn')) {
+                    const projectId = card.getAttribute('data-project-id');
+                    this.toggleProjectExpansion(projectId);
+                }
+            });
+        });
+    }
+
+    renderProjectTasks(tasks, projectId) {
+        if (tasks.length === 0) {
+            return '<div class="no-tasks-message">No tasks in this project yet. <button class="btn btn--primary btn--sm" onclick="projectManager.addTaskToProject(\'' + projectId + '\')">Add First Task</button></div>';
+        }
+
+        return tasks.map(task => {
+            const isOverdue = new Date(task.dueDate) < new Date() && task.status !== 'completed';
+            const daysUntilDue = this.getDaysUntilDue(task.dueDate);
+            
+            return `
+                <div class="project-task-item ${task.status} ${isOverdue ? 'overdue' : ''}" onclick="projectManager.editTask('${task.id}')">
+                    <div class="task-status-indicator">
+                        <div class="status-dot ${task.status}"></div>
+                    </div>
+                    <div class="task-content">
+                        <div class="task-main-info">
+                            <h5 class="task-title">${task.title}</h5>
+                            <div class="task-badges">
+                                <span class="task-priority-badge ${task.priority}">${task.priority}</span>
+                                <span class="task-status-badge ${task.status}">${this.formatStatus(task.status)}</span>
+                            </div>
+                        </div>
+                        <p class="task-description">${task.description}</p>
+                        <div class="task-meta-info">
+                            <div class="task-due-info">
+                                <span class="due-label">Due:</span>
+                                <span class="due-date ${isOverdue ? 'overdue' : ''}">${this.formatDate(task.dueDate)}</span>
+                                ${daysUntilDue !== null ? `<span class="due-countdown">(${daysUntilDue})</span>` : ''}
+                            </div>
+                            <div class="task-team-info">
+                                <span class="team-label">Assigned:</span>
+                                <div class="team-avatars">
+                                    ${this.renderTaskAssignees(task)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn--outline btn--xs" onclick="event.stopPropagation(); projectManager.toggleTaskStatus('${task.id}')">
+                            ${task.status === 'completed' ? '↩️' : '✅'}
+                        </button>
+                        <button class="btn btn--outline btn--xs" onclick="event.stopPropagation(); projectManager.editTask('${task.id}')">✏️</button>
+                        <button class="btn btn--outline btn--xs btn-danger" onclick="event.stopPropagation(); projectManager.deleteTask('${task.id}')">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    renderTaskAssignees(task) {
+        // For now, we'll show placeholder team members
+        // In a real app, this would come from task.assignees or similar
+        const assignees = ['DH', 'JS', 'AM']; // Placeholder initials
+        const maxVisible = 3;
+        
+        return assignees.slice(0, maxVisible).map(initials => 
+            `<div class="team-avatar" title="Team Member">${initials}</div>`
+        ).join('') + (assignees.length > maxVisible ? 
+            `<div class="team-avatar-more">+${assignees.length - maxVisible}</div>` : ''
+        );
+    }
+
+    toggleProjectExpansion(projectId) {
+        const tasksSection = document.getElementById(`tasks-${projectId}`);
+        const expandBtn = document.querySelector(`[data-project-id="${projectId}"] .project-expand-btn .expand-icon`);
+        
+        if (tasksSection && expandBtn) {
+            const isExpanded = tasksSection.style.display !== 'none';
+            
+            if (isExpanded) {
+                tasksSection.style.display = 'none';
+                expandBtn.textContent = '▼';
+                expandBtn.style.transform = 'rotate(0deg)';
+            } else {
+                tasksSection.style.display = 'block';
+                expandBtn.textContent = '▲';
+                expandBtn.style.transform = 'rotate(180deg)';
+            }
+        }
+    }
+
+    filterProjectTasks(projectId, status) {
+        const tasksSection = document.getElementById(`tasks-${projectId}`);
+        if (!tasksSection) return;
+
+        // Update filter buttons
+        const filterButtons = tasksSection.querySelectorAll('.status-filter');
+        filterButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-status') === status) {
+                btn.classList.add('active');
+            }
+        });
+
+        // Filter tasks
+        const taskItems = tasksSection.querySelectorAll('.project-task-item');
+        taskItems.forEach(item => {
+            if (status === 'all') {
+                item.style.display = 'flex';
+            } else {
+                const hasStatus = item.classList.contains(status);
+                item.style.display = hasStatus ? 'flex' : 'none';
+            }
+        });
+    }
+
+    addTaskToProject(projectId) {
+        this.openTaskModal();
+        // Pre-select the project
+        setTimeout(() => {
+            const projectSelect = document.getElementById('taskProject');
+            if (projectSelect) {
+                projectSelect.value = projectId;
+            }
+        }, 100);
+    }
+
+    // Utility functions
+    formatStatus(status) {
+        const statusMap = {
+            'active': 'Active',
+            'completed': 'Completed',
+            'on-hold': 'On Hold',
+            'todo': 'To Do',
+            'in-progress': 'In Progress'
+        };
+        return statusMap[status] || status;
+    }
+
+    getProgressColor(progress) {
+        if (progress >= 80) return 'progress-excellent';
+        if (progress >= 60) return 'progress-good';
+        if (progress >= 40) return 'progress-fair';
+        return 'progress-poor';
+    }
+
+    isOverdue(dueDate) {
+        return new Date(dueDate) < new Date().setHours(0, 0, 0, 0);
+    }
+
+    getDaysUntilDue(dueDate) {
+        const today = new Date().setHours(0, 0, 0, 0);
+        const due = new Date(dueDate).setHours(0, 0, 0, 0);
+        const diffTime = due - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 0) return `${Math.abs(diffDays)} days overdue`;
+        if (diffDays === 0) return 'Due today';
+        if (diffDays === 1) return 'Due tomorrow';
+        if (diffDays <= 7) return `${diffDays} days left`;
+        return null;
     }
 
     // Tasks Rendering
