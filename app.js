@@ -335,6 +335,28 @@ class ProjectManager {
                 this.navigateCalendar(1);
             });
         }
+
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        
+        if (mobileMenuToggle && sidebar && sidebarOverlay) {
+            mobileMenuToggle.addEventListener('click', () => {
+                this.toggleMobileSidebar();
+            });
+            
+            sidebarOverlay.addEventListener('click', () => {
+                this.closeMobileSidebar();
+            });
+        }
+
+        // Close mobile sidebar when navigation link is clicked
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                this.closeMobileSidebar();
+            });
+        });
     }
 
     setupModalListeners() {
@@ -452,6 +474,15 @@ class ProjectManager {
 
         this.currentView = view;
 
+        // Smooth scroll to top when switching views
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
         // Render content
         switch (view) {
             case 'dashboard':
@@ -464,6 +495,44 @@ class ProjectManager {
                 this.renderTasks();
                 this.populateProjectFilters();
                 break;
+        }
+    }
+
+    // Mobile sidebar management
+    toggleMobileSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (sidebar && overlay) {
+            const isOpen = sidebar.classList.contains('mobile-open');
+            
+            if (isOpen) {
+                this.closeMobileSidebar();
+            } else {
+                this.openMobileSidebar();
+            }
+        }
+    }
+
+    openMobileSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (sidebar && overlay) {
+            sidebar.classList.add('mobile-open');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+    }
+
+    closeMobileSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (sidebar && overlay) {
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
         }
     }
 

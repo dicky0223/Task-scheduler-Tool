@@ -1894,39 +1894,91 @@ select.form-control {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .app-layout {
-    flex-direction: column;
+  .header {
+    padding: var(--space-12) 0;
   }
   
-  .sidebar {
-    width: 100%;
-    order: 2;
-    padding: var(--space-16);
-  }
-  
-  .nav-menu {
-    display: flex;
-    overflow-x: auto;
-    gap: var(--space-8);
-  }
-  
-  .nav-item {
-    margin-bottom: 0;
-    flex-shrink: 0;
-  }
-  
-  .main-content {
-    order: 1;
-    padding: var(--space-16);
+  .header__content {
+    padding: 0 var(--space-12);
   }
   
   .header__actions {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: var(--space-8);
   }
   
   .search-input {
-    width: 200px;
+    width: 150px;
+  }
+  
+  .app-layout {
+    padding-top: 70px; /* Adjusted for smaller header */
+  }
+  
+  .sidebar {
+    position: fixed;
+    top: 70px;
+    left: -250px; /* Hidden by default on mobile */
+    width: 250px;
+    height: calc(100vh - 70px);
+    transition: left var(--duration-normal) var(--ease-standard);
+    z-index: 95;
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .sidebar.mobile-open {
+    left: 0;
+  }
+  
+  .nav-menu {
+    display: block;
+  }
+  
+  .nav-item {
+    margin-bottom: var(--space-4);
+  }
+  
+  .main-content {
+    margin-left: 0; /* No sidebar margin on mobile */
+    padding: var(--space-16);
+    width: 100%;
+  }
+  
+  /* Mobile menu toggle button */
+  .mobile-menu-toggle {
+    display: block;
+    background: none;
+    border: none;
+    font-size: var(--font-size-xl);
+    cursor: pointer;
+    color: var(--color-text);
+    padding: var(--space-8);
+    border-radius: var(--radius-sm);
+    transition: background-color var(--duration-fast) var(--ease-standard);
+  }
+  
+  .mobile-menu-toggle:hover {
+    background-color: var(--color-secondary);
+  }
+  
+  /* Overlay for mobile sidebar */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 94;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--duration-normal) var(--ease-standard);
+  }
+  
+  .sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
   }
   
   .dashboard-sections {
@@ -2020,4 +2072,59 @@ select.form-control {
     font-size: var(--font-size-base);
     min-width: 120px;
   }
+}
+
+/* Desktop-only styles */
+@media (min-width: 769px) {
+  .mobile-menu-toggle {
+    display: none;
+  }
+  
+  .sidebar-overlay {
+    display: none;
+  }
+}
+
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar styles for webkit browsers */
+.main-content::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.main-content::-webkit-scrollbar-track,
+.sidebar::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+.main-content::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+.main-content::-webkit-scrollbar-thumb:hover,
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* Ensure content doesn't jump when scrollbar appears/disappears */
+.main-content {
+  scrollbar-gutter: stable;
+}
+
+/* Loading state for smooth transitions */
+.view {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all var(--duration-normal) var(--ease-standard);
+}
+
+.view.active {
+  opacity: 1;
+  transform: translateY(0);
 }
