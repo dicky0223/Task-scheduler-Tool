@@ -673,7 +673,7 @@ select.form-control {
   padding: 0 var(--space-16);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  position: relative;
 }
 
 .header__title {
@@ -681,12 +681,20 @@ select.form-control {
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   margin: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 1;
 }
 
 .header__actions {
   display: flex;
   align-items: center;
   gap: var(--space-16);
+  margin-left: auto;
+  position: relative;
+  z-index: 2;
 }
 
 .search-container {
@@ -1893,197 +1901,8 @@ select.form-control {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-  .header {
-    padding: var(--space-12) 0;
-  }
-  
-  .header__content {
-    padding: 0 var(--space-12);
-  }
-  
-  .header__actions {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: var(--space-8);
-  }
-  
-  .search-input {
-    width: 150px;
-  }
-  
-  .app-layout {
-    padding-top: 70px; /* Adjusted for smaller header */
-  }
-  
-  .sidebar {
-    position: fixed;
-    top: 70px;
-    left: -250px; /* Hidden by default on mobile */
-    width: 250px;
-    height: calc(100vh - 70px);
-    transition: left var(--duration-normal) var(--ease-standard);
-    z-index: 95;
-    box-shadow: var(--shadow-lg);
-  }
-  
-  .sidebar.mobile-open {
-    left: 0;
-  }
-  
-  .nav-menu {
-    display: block;
-  }
-  
-  .nav-item {
-    margin-bottom: var(--space-4);
-  }
-  
-  .main-content {
-    margin-left: 0; /* No sidebar margin on mobile */
-    padding: var(--space-16);
-    width: 100%;
-  }
-  
-  /* Mobile menu toggle button */
-  .mobile-menu-toggle {
-    display: block;
-    background: none;
-    border: none;
-    font-size: var(--font-size-xl);
-    cursor: pointer;
-    color: var(--color-text);
-    padding: var(--space-8);
-    border-radius: var(--radius-sm);
-    transition: background-color var(--duration-fast) var(--ease-standard);
-  }
-  
-  .mobile-menu-toggle:hover {
-    background-color: var(--color-secondary);
-  }
-  
-  /* Overlay for mobile sidebar */
-  .sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 94;
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--duration-normal) var(--ease-standard);
-  }
-  
-  .sidebar-overlay.active {
-    opacity: 1;
-    visibility: visible;
-  }
-  
-  .dashboard-sections {
-    grid-template-columns: 1fr;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .projects-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .project-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-12);
-  }
-  
-  .project-actions {
-    flex-direction: column;
-    gap: var(--space-8);
-  }
-  
-  .task-status-filters {
-    flex-wrap: wrap;
-    gap: var(--space-2);
-  }
-  
-  .task-main-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-8);
-  }
-  
-  .task-meta-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-8);
-  }
-  
-  .project-task-item {
-    flex-direction: column;
-    gap: var(--space-8);
-  }
-  
-  .task-actions {
-    flex-direction: row;
-    justify-content: flex-end;
-  }
-  
-  .kanban-board {
-    grid-template-columns: 1fr;
-    gap: var(--space-16);
-    height: auto;
-  }
-  
-  .view-controls {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-12);
-  }
-  
-  .task-filters {
-    flex-wrap: wrap;
-  }
 
-  .calendar-body {
-    grid-template-columns: repeat(7, 1fr);
-  }
-  
-  .calendar-day {
-    min-height: 80px;
-    padding: var(--space-4);
-  }
-  
-  .calendar-day-number {
-    font-size: var(--font-size-xs);
-  }
-  
-  .calendar-task {
-    font-size: 10px;
-    padding: var(--space-1) var(--space-2);
-  }
-  
-  .calendar-navigation {
-    gap: var(--space-8);
-  }
-  
-  .calendar-month-year {
-    font-size: var(--font-size-base);
-    min-width: 120px;
-  }
-}
 
-/* Desktop-only styles */
-@media (min-width: 769px) {
-  .mobile-menu-toggle {
-    display: none;
-  }
-  
-  .sidebar-overlay {
-    display: none;
-  }
-}
 
 /* Smooth scrolling for the entire page */
 html {
