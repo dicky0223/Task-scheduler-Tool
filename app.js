@@ -22,7 +22,6 @@ class ProjectManager {
             this.setupEventListeners();
             this.renderDashboard();
             this.initializeTheme();
-            this.initializeDateTasksModal();
         }).catch(error => {
             console.error('Failed to initialize app:', error);
             this.showToast('Failed to initialize application', 'error');
@@ -337,11 +336,6 @@ class ProjectManager {
             });
         }
 
-        // Date tasks modal events
-        document.getElementById('closeDateTasksModal').addEventListener('click', () => this.closeDateTasksModal());
-        document.getElementById('closeDateTasksModalBtn').addEventListener('click', () => this.closeDateTasksModal());
-        document.getElementById('addTaskForDate').addEventListener('click', () => this.addTaskForSelectedDate());
-
         // Mobile menu toggle
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
         const sidebar = document.querySelector('.sidebar');
@@ -434,15 +428,6 @@ class ProjectManager {
                 }
             });
         }
-    }
-
-    initializeDateTasksModal() {
-        // Close modal when clicking outside
-        document.getElementById('dateTasksModal').addEventListener('click', (e) => {
-            if (e.target.id === 'dateTasksModal') {
-                this.closeDateTasksModal();
-            }
-        });
     }
 
     // Theme Management
@@ -692,8 +677,10 @@ class ProjectManager {
 
         // Add click listeners to calendar days
         document.querySelectorAll('.calendar-day[data-date]').forEach(dayEl => {
-            // Add click event listener for date selection
-            dayEl.addEventListener('click', () => this.handleDateClick(date));
+            dayEl.addEventListener('click', (e) => {
+                const date = e.currentTarget.getAttribute('data-date');
+                this.showTasksForDate(date);
+            });
         });
     }
 
@@ -728,191 +715,6 @@ class ProjectManager {
         newDate.setMonth(newDate.getMonth() + direction);
         this.currentCalendarDate = newDate;
         this.renderCalendar();
-    }
-
-    async handleDateClick(date) {
-        const dateString = this.formatDate(date);
-        const tasks = await this.getTasksForDate(dateString);
-        this.showDateTasksModal(date, tasks);
-    }
-
-    async getTasksForDate(dateString) {
-        try {
-            const allTasks = await projectFlowDB.getAllTasks();
-            return allTasks.filter(task => task.dueDate === dateString);
-        } catch (error) {
-            console.error('Error fetching tasks for date:', error);
-            return [];
-        }
-    }
-
-    async showDateTasksModal(date, tasks) {
-        const modal = document.getElementById('dateTasksModal');
-        const title = document.getElementById('dateTasksModalTitle');
-        const container = document.getElementById('dateTasksContainer');
-        const addTaskBtn = document.getElementById('addTaskForDate');
-
-        // Format date for display
-        const formattedDate = date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-
-        title.textContent = `Tasks for ${formattedDate}`;
-        
-        // Store selected date for adding new tasks
-        this.selectedDate = this.formatDate(date);
-        
-        // Clear previous content
-        container.innerHTML = '';
-
-        if (tasks.length === 0) {
-            container.innerHTML = `
-                <div class="no-date-tasks-message">
-                    <p>No tasks scheduled for this date.</p>
-                </div>
-            `;
-        } else {
-            // Add header info
-            const headerInfo = document.createElement('div');
-            headerInfo.className = 'date-tasks-header-info';
-            headerInfo.innerHTML = `
-                <div class="date-tasks-date">${formattedDate}</div>
-                <div class="date-tasks-count">${tasks.length} task${tasks.length !== 1 ? 's' : ''} scheduled</div>
-            `;
-            container.appendChild(headerInfo);
-
-            // Get all projects for reference
-            const projects = await projectFlowDB.getAllProjects();
-            const projectMap = {};
-            projects.forEach(project => {
-                projectMap[project.id] = project;
-            });
-
-            // Create task items
-            for (const task of tasks) {
-                const taskElement = this.createDateTaskElement(task, projectMap[task.projectId]);
-                container.appendChild(taskElement);
-            }
-        }
-
-        // Show modal
-        modal.classList.add('active');
-    }
-
-    createDateTaskElement(task, project) {
-        const taskElement = document.createElement('div');
-        taskElement.className = `date-task-item ${task.status}`;
-        
-        if (task.status === 'completed') {
-            taskElement.classList.add('completed');
-        }
-        
-        // Check if task is overdue
-        const today = new Date();
-        const dueDate = new Date(task.dueDate);
-        if (dueDate < today && task.status !== 'completed') {
-            taskElement.classList.add('overdue');
-        }
-
-        taskElement.innerHTML = `
-            <div class="date-task-status-indicator">
-                <div class="status-dot ${task.status}"></div>
-            </div>
-            <div class="date-task-content">
-                <div class="date-task-header">
-                    <h4 class="date-task-title">${this.escapeHtml(task.title)}</h4>
-                    <div class="date-task-badges">
-                        <span class="date-task-priority-badge ${task.priority}">${task.priority}</span>
-                    </div>
-                </div>
-                ${task.description ? `<div class="date-task-description">${this.escapeHtml(task.description)}</div>` : ''}
-                <div class="date-task-meta">
-                    <span class="date-task-project">${project ? this.escapeHtml(project.name) : 'Unknown Project'}</span>
-                    <span class="date-task-status">${this.formatStatus(task.status)}</span>
-                </div>
-                <div class="date-task-actions">
-                    <button class="btn btn--outline btn--sm" onclick="projectManager.editTaskFromDateModal('${task.id}')">Edit</button>
-                    <button class="btn btn--secondary btn--sm" onclick="projectManager.toggleTaskStatusFromDateModal('${task.id}')">
-                        ${task.status === 'completed' ? 'Reopen' : 'Complete'}
-                    </button>
-                    <button class="btn btn--outline btn--sm btn-danger" onclick="projectManager.deleteTaskFromDateModal('${task.id}')">Delete</button>
-                </div>
-            </div>
-        `;
-
-        return taskElement;
-    }
-
-    closeDateTasksModal() {
-        const modal = document.getElementById('dateTasksModal');
-        modal.classList.remove('active');
-        this.selectedDate = null;
-    }
-
-    addTaskForSelectedDate() {
-        if (this.selectedDate) {
-            this.closeDateTasksModal();
-            this.showTaskModal();
-            // Pre-fill the due date
-            document.getElementById('taskDueDate').value = this.selectedDate;
-        }
-    }
-
-    async editTaskFromDateModal(taskId) {
-        this.closeDateTasksModal();
-        await this.editTask(taskId);
-    }
-
-    async toggleTaskStatusFromDateModal(taskId) {
-        try {
-            const task = await projectFlowDB.getTask(taskId);
-            if (task) {
-                const newStatus = task.status === 'completed' ? 'todo' : 'completed';
-                task.status = newStatus;
-                await projectFlowDB.updateTask(task);
-                
-                this.showToast(
-                    `Task ${newStatus === 'completed' ? 'completed' : 'reopened'} successfully!`,
-                    'success'
-                );
-                
-                // Refresh the date modal if it's still open
-                if (this.selectedDate) {
-                    const date = new Date(this.selectedDate);
-                    const tasks = await this.getTasksForDate(this.selectedDate);
-                    this.showDateTasksModal(date, tasks);
-                }
-                
-                this.loadData();
-            }
-        } catch (error) {
-            console.error('Error toggling task status:', error);
-            this.showToast('Error updating task status', 'error');
-        }
-    }
-
-    async deleteTaskFromDateModal(taskId) {
-        if (confirm('Are you sure you want to delete this task?')) {
-            try {
-                await projectFlowDB.deleteTask(taskId);
-                this.showToast('Task deleted successfully!', 'success');
-                
-                // Refresh the date modal if it's still open
-                if (this.selectedDate) {
-                    const date = new Date(this.selectedDate);
-                    const tasks = await this.getTasksForDate(this.selectedDate);
-                    this.showDateTasksModal(date, tasks);
-                }
-                
-                this.loadData();
-            } catch (error) {
-                console.error('Error deleting task:', error);
-                this.showToast('Error deleting task', 'error');
-            }
-        }
     }
 
     showTasksForDate(date) {
@@ -1686,11 +1488,11 @@ class ProjectManager {
         }
     }
 
-    // Utility methods
-    formatDate(date) {
-        if (!date) return 'Not set';
-        const dateObj = new Date(date);
-        return dateObj.toLocaleDateString('en-US', { 
+    // Utility functions
+    formatDate(dateString) {
+        if (!dateString) return 'Not set';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
             year: 'numeric', 
             month: 'short', 
             day: 'numeric' 
