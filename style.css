@@ -673,7 +673,7 @@ select.form-control {
   padding: 0 var(--space-16);
   display: flex;
   align-items: center;
-  position: relative;
+  justify-content: space-between;
 }
 
 .header__title {
@@ -681,20 +681,12 @@ select.form-control {
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   margin: 0;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  z-index: 1;
 }
 
 .header__actions {
   display: flex;
   align-items: center;
   gap: var(--space-16);
-  margin-left: auto;
-  position: relative;
-  z-index: 2;
 }
 
 .search-container {
