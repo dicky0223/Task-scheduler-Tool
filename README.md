@@ -38,11 +38,33 @@ A modern, lightweight project management application built with vanilla JavaScri
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### For General Users (Easiest Method)
+
+If you just want to use ProjectFlow without any technical setup:
+
+1. **Download the project**
+   - Click the green "Code" button on GitHub and select "Download ZIP"
+   - Extract the ZIP file to a folder on your computer
+
+2. **Open the application**
+   - Navigate to the extracted folder
+   - Double-click on `index.html` to open it in your web browser
+   - That's it! ProjectFlow will start immediately
+
+3. **Start using ProjectFlow**
+   - The application will load with sample data to help you get started
+   - Create your first project by clicking "New Project"
+   - Add tasks and start managing your workflow
+
+### For Developers
+
+If you want to run the development server or contribute to the project:
+
+#### Prerequisites
 - Modern web browser (Chrome, Firefox, Safari, Edge)
 - Node.js (for development server)
 
-### Installation
+#### Installation
 
 1. **Clone the repository**
    ```bash
@@ -63,8 +85,25 @@ A modern, lightweight project management application built with vanilla JavaScri
 4. **Open your browser**
    Navigate to `http://localhost:3000` to view the application
 
-### Alternative Setup
-You can also run ProjectFlow directly by opening `index.html` in your web browser, as it's a client-side application with no server dependencies.
+#### Windows PowerShell Issues
+
+If you encounter PowerShell execution policy errors on Windows:
+
+**Option 1: Use Command Prompt instead**
+```cmd
+npm run dev
+```
+
+**Option 2: Temporarily change PowerShell execution policy**
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+npm run dev
+```
+
+**Option 3: Use VS Code integrated terminal**
+- Open the project folder in VS Code
+- Use Terminal → New Terminal
+- Run `npm run dev`
 
 ## 📖 Usage Guide
 
@@ -133,20 +172,29 @@ ProjectFlow uses IndexedDB for client-side data storage, providing:
 ### Architecture
 ```
 projectflow/
-├── index.html          # Main HTML structure
-├── app.js             # Core application logic
-├── db.js              # IndexedDB database operations
-├── db.js              # IndexedDB database operations
-├── style.css          # Styling and themes
-├── package.json       # Project configuration
-└── README.md          # Documentation
+├── index.html              # Main HTML structure
+├── db.js                   # IndexedDB database operations
+├── style.css               # Styling and themes
+├── src/                    # Source code directory
+│   ├── main.js            # Core application controller
+│   ├── data/              # Data management
+│   │   └── dbService.js   # Database service layer
+│   ├── ui/                # User interface components
+│   │   ├── modals.js      # Modal management
+│   │   ├── renderers.js   # UI rendering functions
+│   │   ├── theme.js       # Theme management
+│   │   └── toast.js       # Toast notifications
+│   └── utils/             # Utility functions
+│       └── helpers.js     # Helper functions
+├── package.json           # Project configuration
+└── README.md              # Documentation
 ```
 
 ### Key Components
-- **ProjectManager Class**: Main application controller
-- **ProjectFlowDB Class**: IndexedDB database operations and management
-- **Data Management**: IndexedDB with automatic migration from Local Storage
-- **Data Management**: IndexedDB with automatic migration from Local Storage
+- **ProjectManager Class**: Main application controller in `src/main.js`
+- **ProjectFlowDB Class**: IndexedDB database operations and management in `db.js`
+- **Data Management**: IndexedDB with automatic migration from Local Storage via `src/data/dbService.js`
+- **UI Components**: Modular UI components in `src/ui/` directory
 - **Event Handling**: Comprehensive event listeners for user interactions
 - **Theme System**: CSS custom properties for dark/light mode
 - **Responsive Design**: Mobile-first approach with breakpoints
@@ -215,7 +263,7 @@ ProjectFlow is compatible with all modern browsers:
 ## 🔧 Development
 
 ### Project Structure
-- **Modular Design**: Separated database operations for maintainability
+- **Modular Design**: Separated components for maintainability
 - **Event-Driven**: Comprehensive event handling system
 - **Data Persistence**: IndexedDB with automatic migration and error handling
 - **Responsive CSS**: Mobile-first responsive design
@@ -263,6 +311,8 @@ If you encounter any issues or have questions:
 2. Create a new issue with detailed information
 3. Include browser version and steps to reproduce
 4. For database-related issues, check browser console for IndexedDB errors
+
+For direct support, contact: chunhinhocuhk@gmail.com
 
 ---
 
