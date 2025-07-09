@@ -18,23 +18,55 @@ class ProjectManager {
     }
 
     init() {
-        this.loadData();
-        this.setupEventListeners();
-        this.renderDashboard();
-        this.initializeTheme();
+        this.loadData().then(() => {
+            this.setupEventListeners();
+            this.renderDashboard();
+            this.initializeTheme();
+        }).catch(error => {
+            console.error('Failed to initialize app:', error);
+            this.showToast('Failed to initialize application', 'error');
+        });
     }
 
     // Data Management
-    loadData() {
-        const savedProjects = localStorage.getItem('projectflow_projects');
-        const savedTasks = localStorage.getItem('projectflow_tasks');
-        
-        if (savedProjects && savedTasks) {
-            this.projects = JSON.parse(savedProjects);
-            this.tasks = JSON.parse(savedTasks);
-        } else {
-            // Load sample data
-            this.projects = [
+    async loadData() {
+        try {
+            // Try to load data from IndexedDB first
+            const dbProjects = await projectFlowDB.getAllProjects();
+            const dbTasks = await projectFlowDB.getAllTasks();
+            
+            if (dbProjects.length > 0 || dbTasks.length > 0) {
+                // Data exists in IndexedDB
+                this.projects = dbProjects;
+                this.tasks = dbTasks;
+                return;
+            }
+            
+            // Check for localStorage data to migrate
+            const savedProjects = localStorage.getItem('projectflow_projects');
+            const savedTasks = localStorage.getItem('projectflow_tasks');
+            
+            if (savedProjects && savedTasks) {
+                // Migrate from localStorage to IndexedDB
+                const localProjects = JSON.parse(savedProjects);
+                const localTasks = JSON.parse(savedTasks);
+                
+                await projectFlowDB.bulkAddProjects(localProjects);
+                await projectFlowDB.bulkAddTasks(localTasks);
+                
+                // Clear localStorage after successful migration
+                localStorage.removeItem('projectflow_projects');
+                localStorage.removeItem('projectflow_tasks');
+                
+                this.projects = localProjects;
+                this.tasks = localTasks;
+                
+                this.showToast('Data migrated to IndexedDB successfully', 'success');
+                return;
+            }
+            
+            // No existing data, load sample data
+            const sampleProjects = [
                 {
                     "id": "proj-1",
                     "name": "Website Redesign",
@@ -69,7 +101,7 @@ class ProjectManager {
                 }
             ];
             
-            this.tasks = [
+            const sampleTasks = [
                 {
                     "id": "task-1",
                     "title": "Create wireframes",
@@ -172,13 +204,31 @@ class ProjectManager {
                 }
             ];
             
-            this.saveData();
+            // Save sample data to IndexedDB
+            await projectFlowDB.bulkAddProjects(sampleProjects);
+            await projectFlowDB.bulkAddTasks(sampleTasks);
+            
+            this.projects = sampleProjects;
+            this.tasks = sampleTasks;
+            
+        } catch (error) {
+            console.error('Failed to load data:', error);
+            this.showToast('Failed to load data from database', 'error');
+            
+            // Fallback to empty arrays
+            this.projects = [];
+            this.tasks = [];
         }
     }
 
-    saveData() {
-        localStorage.setItem('projectflow_projects', JSON.stringify(this.projects));
-        localStorage.setItem('projectflow_tasks', JSON.stringify(this.tasks));
+    async refreshData() {
+        try {
+            this.projects = await projectFlowDB.getAllProjects();
+            this.tasks = await projectFlowDB.getAllTasks();
+        } catch (error) {
+            console.error('Failed to refresh data:', error);
+            this.showToast('Failed to refresh data', 'error');
+        }
     }
 
     // Event Listeners
@@ -307,7 +357,9 @@ class ProjectManager {
         if (saveProject) {
             saveProject.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.saveProject();
+                this.saveProject().catch(error => {
+                    console.error('Save project error:', error);
+                });
             });
         }
 
@@ -330,7 +382,9 @@ class ProjectManager {
         if (saveTask) {
             saveTask.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.saveTask();
+                this.saveTask().catch(error => {
+                    console.error('Save task error:', error);
+                });
             });
         }
 
@@ -861,7 +915,7 @@ class ProjectManager {
         if (form) form.reset();
     }
 
-    saveProject() {
+    async saveProject() {
         const nameField = document.getElementById('projectName');
         const descField = document.getElementById('projectDescription');
         const statusField = document.getElementById('projectStatus');
@@ -879,51 +933,76 @@ class ProjectManager {
             return;
         }
         
-        if (this.currentEditingProject) {
-            // Edit existing project
-            const projectIndex = this.projects.findIndex(p => p.id === this.currentEditingProject);
-            if (projectIndex !== -1) {
-                this.projects[projectIndex] = {
-                    ...this.projects[projectIndex],
+        try {
+            if (this.currentEditingProject) {
+                // Edit existing project
+                const existingProject = this.projects.find(p => p.id === this.currentEditingProject);
+                if (existingProject) {
+                    const updatedProject = {
+                        ...existingProject,
+                        name,
+                        description,
+                        status,
+                        dueDate
+                    };
+                    
+                    await projectFlowDB.updateProject(updatedProject);
+                    
+                    // Update local array
+                    const projectIndex = this.projects.findIndex(p => p.id === this.currentEditingProject);
+                    this.projects[projectIndex] = updatedProject;
+                    
+                    this.showToast('Project updated successfully', 'success');
+                }
+            } else {
+                // Create new project
+                const newProject = {
+                    id: `proj-${Date.now()}`,
                     name,
                     description,
                     status,
-                    dueDate
+                    dueDate,
+                    createdDate: new Date().toISOString().split('T')[0]
                 };
-                this.showToast('Project updated successfully', 'success');
+                
+                await projectFlowDB.addProject(newProject);
+                this.projects.push(newProject);
+                this.showToast('Project created successfully', 'success');
             }
-        } else {
-            // Create new project
-            const newProject = {
-                id: `proj-${Date.now()}`,
-                name,
-                description,
-                status,
-                dueDate,
-                createdDate: new Date().toISOString().split('T')[0]
-            };
-            this.projects.push(newProject);
-            this.showToast('Project created successfully', 'success');
+            
+            this.closeProjectModal();
+            this.renderProjects();
+            this.renderDashboard();
+            
+        } catch (error) {
+            console.error('Failed to save project:', error);
+            this.showToast('Failed to save project', 'error');
         }
-        
-        this.saveData();
-        this.closeProjectModal();
-        this.renderProjects();
-        this.renderDashboard();
     }
 
     editProject(projectId) {
         this.openProjectModal(projectId);
     }
 
-    deleteProject(projectId) {
+    async deleteProject(projectId) {
         if (confirm('Are you sure you want to delete this project? All associated tasks will also be deleted.')) {
-            this.projects = this.projects.filter(p => p.id !== projectId);
-            this.tasks = this.tasks.filter(t => t.projectId !== projectId);
-            this.saveData();
-            this.renderProjects();
-            this.renderDashboard();
-            this.showToast('Project deleted successfully', 'success');
+            try {
+                // Delete project and associated tasks from IndexedDB
+                await projectFlowDB.deleteProject(projectId);
+                const deletedTasksCount = await projectFlowDB.deleteTasksByProject(projectId);
+                
+                // Update local arrays
+                this.projects = this.projects.filter(p => p.id !== projectId);
+                this.tasks = this.tasks.filter(t => t.projectId !== projectId);
+                
+                this.renderProjects();
+                this.renderDashboard();
+                this.showToast(`Project and ${deletedTasksCount} associated tasks deleted successfully`, 'success');
+                
+            } catch (error) {
+                console.error('Failed to delete project:', error);
+                this.showToast('Failed to delete project', 'error');
+            }
         }
     }
 
@@ -974,7 +1053,7 @@ class ProjectManager {
         if (form) form.reset();
     }
 
-    saveTask() {
+    async saveTask() {
         const titleField = document.getElementById('taskTitle');
         const descField = document.getElementById('taskDescription');
         const projectField = document.getElementById('taskProject');
@@ -1001,70 +1080,98 @@ class ProjectManager {
             return;
         }
         
-        if (this.currentEditingTask) {
-            // Edit existing task
-            const taskIndex = this.tasks.findIndex(t => t.id === this.currentEditingTask);
-            if (taskIndex !== -1) {
-                this.tasks[taskIndex] = {
-                    ...this.tasks[taskIndex],
+        try {
+            if (this.currentEditingTask) {
+                // Edit existing task
+                const existingTask = this.tasks.find(t => t.id === this.currentEditingTask);
+                if (existingTask) {
+                    const updatedTask = {
+                        ...existingTask,
+                        title,
+                        description,
+                        projectId,
+                        priority,
+                        status,
+                        dueDate
+                    };
+                    
+                    await projectFlowDB.updateTask(updatedTask);
+                    
+                    // Update local array
+                    const taskIndex = this.tasks.findIndex(t => t.id === this.currentEditingTask);
+                    this.tasks[taskIndex] = updatedTask;
+                    
+                    this.showToast('Task updated successfully', 'success');
+                }
+            } else {
+                // Create new task
+                const newTask = {
+                    id: `task-${Date.now()}`,
                     title,
                     description,
                     projectId,
                     priority,
                     status,
-                    dueDate
+                    dueDate,
+                    createdDate: new Date().toISOString().split('T')[0]
                 };
-                this.showToast('Task updated successfully', 'success');
+                
+                await projectFlowDB.addTask(newTask);
+                this.tasks.push(newTask);
+                this.showToast('Task created successfully', 'success');
             }
-        } else {
-            // Create new task
-            const newTask = {
-                id: `task-${Date.now()}`,
-                title,
-                description,
-                projectId,
-                priority,
-                status,
-                dueDate,
-                createdDate: new Date().toISOString().split('T')[0]
-            };
-            this.tasks.push(newTask);
-            this.showToast('Task created successfully', 'success');
+            
+            this.closeTaskModal();
+            this.renderTasks();
+            this.renderDashboard();
+            
+        } catch (error) {
+            console.error('Failed to save task:', error);
+            this.showToast('Failed to save task', 'error');
         }
-        
-        this.saveData();
-        this.closeTaskModal();
-        this.renderTasks();
-        this.renderDashboard();
     }
 
     editTask(taskId) {
         this.openTaskModal(taskId);
     }
 
-    deleteTask(taskId) {
+    async deleteTask(taskId) {
         if (confirm('Are you sure you want to delete this task?')) {
-            this.tasks = this.tasks.filter(t => t.id !== taskId);
-            this.saveData();
-            this.renderTasks();
-            this.renderDashboard();
-            this.showToast('Task deleted successfully', 'success');
+            try {
+                await projectFlowDB.deleteTask(taskId);
+                this.tasks = this.tasks.filter(t => t.id !== taskId);
+                
+                this.renderTasks();
+                this.renderDashboard();
+                this.showToast('Task deleted successfully', 'success');
+                
+            } catch (error) {
+                console.error('Failed to delete task:', error);
+                this.showToast('Failed to delete task', 'error');
+            }
         }
     }
 
-    toggleTaskStatus(taskId) {
+    async toggleTaskStatus(taskId) {
         const task = this.tasks.find(t => t.id === taskId);
         if (task) {
-            if (task.status === 'completed') {
-                task.status = 'todo';
-            } else {
-                task.status = 'completed';
+            try {
+                if (task.status === 'completed') {
+                    task.status = 'todo';
+                } else {
+                    task.status = 'completed';
+                }
+                
+                await projectFlowDB.updateTask(task);
+                
+                this.renderTasks();
+                this.renderDashboard();
+                this.showToast(`Task marked as ${task.status}`, 'success');
+                
+            } catch (error) {
+                console.error('Failed to update task status:', error);
+                this.showToast('Failed to update task status', 'error');
             }
-            
-            this.saveData();
-            this.renderTasks();
-            this.renderDashboard();
-            this.showToast(`Task marked as ${task.status}`, 'success');
         }
     }
 
