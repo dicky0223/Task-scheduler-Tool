@@ -763,11 +763,11 @@ class ProjectManager {
             
             return `
                 <div class="project-card enhanced-project-card" data-project-id="${project.id}">
-                            <button class="btn btn--outline btn--xs complete-task-btn" data-task-id="${task.id}">
+                    <div class="project-header">
                         <div class="project-title-section">
                             <div class="project-status-indicator ${project.status}"></div>
                             <h3 class="project-name">${project.name}</h3>
-                            <button class="btn btn--outline btn--xs btn-danger delete-task-btn" data-task-id="${task.id}">
+                            <button class="project-expand-btn" onclick="projectManager.toggleProjectExpansion('${project.id}')">
                                 <span class="expand-icon">▼</span>
                             </button>
                         </div>
