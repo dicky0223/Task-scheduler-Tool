@@ -73,6 +73,7 @@ You can also run ProjectFlow directly by opening `index.html` in your web browse
 2. **Create a Project**: Click "New Project" to create your first project
 3. **Add Tasks**: Navigate to the Tasks section and create tasks for your projects
 4. **Track Progress**: Use the Kanban board or list view to manage task progress
+5. **Data Migration**: If you previously used ProjectFlow, your data will be automatically migrated from Local Storage to IndexedDB on first load
 
 ### Navigation
 - **Dashboard** (📊): Overview of all projects and tasks with statistics
@@ -101,16 +102,41 @@ You can also run ProjectFlow directly by opening `index.html` in your web browse
 
 ### Technologies Used
 - **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3
-- **Storage**: Local Storage for data persistence
+- **Storage**: IndexedDB for robust data persistence with automatic migration from Local Storage
 - **Styling**: Custom CSS with CSS Variables for theming
 - **Icons**: Unicode emojis for lightweight iconography
 - **Responsive**: CSS Grid and Flexbox for responsive layouts
+
+### Database Architecture
+ProjectFlow uses IndexedDB for client-side data storage, providing:
+- **Structured Storage**: Separate object stores for projects and tasks
+- **Indexing**: Efficient querying by status, priority, due date, and project relationships
+- **ACID Transactions**: Reliable data operations with rollback capabilities
+- **Large Storage Capacity**: Much larger storage limits compared to Local Storage
+- **Asynchronous Operations**: Non-blocking database operations for better performance
+
+#### Database Schema
+```javascript
+// Projects Object Store
+{
+  keyPath: 'id',
+  indexes: ['status', 'dueDate', 'createdDate']
+}
+
+// Tasks Object Store
+{
+  keyPath: 'id',
+  indexes: ['projectId', 'status', 'priority', 'dueDate', 'createdDate']
+}
+```
 
 ### Architecture
 ```
 projectflow/
 ├── index.html          # Main HTML structure
 ├── app.js             # Core application logic
+├── db.js              # IndexedDB database operations
+├── db.js              # IndexedDB database operations
 ├── style.css          # Styling and themes
 ├── package.json       # Project configuration
 └── README.md          # Documentation
@@ -118,10 +144,20 @@ projectflow/
 
 ### Key Components
 - **ProjectManager Class**: Main application controller
-- **Data Management**: Local storage with JSON serialization
+- **ProjectFlowDB Class**: IndexedDB database operations and management
+- **Data Management**: IndexedDB with automatic migration from Local Storage
+- **Data Management**: IndexedDB with automatic migration from Local Storage
 - **Event Handling**: Comprehensive event listeners for user interactions
 - **Theme System**: CSS custom properties for dark/light mode
 - **Responsive Design**: Mobile-first approach with breakpoints
+
+### Data Migration
+ProjectFlow automatically handles migration from Local Storage to IndexedDB:
+1. **First Load**: Checks for existing IndexedDB data
+2. **Migration Detection**: If no IndexedDB data exists, checks Local Storage
+3. **Automatic Migration**: Transfers all projects and tasks to IndexedDB
+4. **Cleanup**: Removes Local Storage data after successful migration
+5. **Fallback**: Loads sample data if no existing data is found
 
 ### Data Structure
 ```javascript
@@ -179,16 +215,18 @@ ProjectFlow is compatible with all modern browsers:
 ## 🔧 Development
 
 ### Project Structure
-- **Modular Design**: Single-file architecture for simplicity
+- **Modular Design**: Separated database operations for maintainability
 - **Event-Driven**: Comprehensive event handling system
-- **Data Persistence**: Local storage with automatic save/load
+- **Data Persistence**: IndexedDB with automatic migration and error handling
 - **Responsive CSS**: Mobile-first responsive design
+- **Async Operations**: Non-blocking database operations with proper error handling
 
 ### Customization
 - **Themes**: Modify CSS custom properties in `:root`
 - **Colors**: Update color variables for brand customization
 - **Layout**: Adjust grid and flexbox properties for layout changes
 - **Features**: Extend the ProjectManager class for new functionality
+- **Database**: Modify the ProjectFlowDB class to add new data operations
 
 ## 🤝 Contributing
 
@@ -203,6 +241,8 @@ ProjectFlow is compatible with all modern browsers:
 - Test features across different browsers and devices
 - Update documentation for new features
 - Ensure responsive design principles are maintained
+- Test database operations thoroughly, including migration scenarios
+- Handle async operations with proper error handling
 
 ## 📄 License
 
@@ -210,10 +250,11 @@ This tool is developed by Dicky CH HO. Copyright © 2025 Dicky CH HO. All rights
 
 ## 🙏 Acknowledgments
 
-- Built with vanilla JavaScript for maximum compatibility
+- Built with vanilla JavaScript and IndexedDB for maximum compatibility and performance
 - Inspired by modern project management tools
 - Designed with accessibility and usability in mind
 - Uses semantic HTML and ARIA attributes for screen readers
+- Implements progressive enhancement with graceful fallbacks
 
 ## 📞 Support
 
@@ -221,7 +262,8 @@ If you encounter any issues or have questions:
 1. Check the existing issues on GitHub
 2. Create a new issue with detailed information
 3. Include browser version and steps to reproduce
+4. For database-related issues, check browser console for IndexedDB errors
 
 ---
 
-**ProjectFlow** - Streamline your project management workflow with a clean, intuitive interface that works everywhere.
+**ProjectFlow** - Streamline your project management workflow with a clean, intuitive interface and robust data persistence that works everywhere.
