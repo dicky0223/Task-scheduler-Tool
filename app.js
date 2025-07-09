@@ -240,15 +240,6 @@ class ProjectManager {
                 this.switchView(view);
             });
         });
-        
-        // Calendar task modal event listeners
-        document.getElementById('closeCalendarTaskModal').addEventListener('click', () => this.hideCalendarTaskModal());
-        document.getElementById('closeCalendarTaskModalBtn').addEventListener('click', () => this.hideCalendarTaskModal());
-        document.getElementById('calendarTaskModal').addEventListener('click', (e) => {
-            if (e.target.id === 'calendarTaskModal') {
-                this.hideCalendarTaskModal();
-            }
-        });
 
         // Theme toggle
         const themeToggle = document.getElementById('themeToggle');
@@ -734,75 +725,8 @@ class ProjectManager {
             return;
         }
 
-        // Show the calendar task modal with detailed task list
-        this.showCalendarTaskModal(date, tasksForDate);
-    }
-
-    showCalendarTaskModal(date, tasks) {
-        const modal = document.getElementById('calendarTaskModal');
-        const modalTitle = document.getElementById('calendarTaskModalTitle');
-        const taskDetails = document.getElementById('calendarTaskDetails');
-
-        // Set modal title
-        modalTitle.textContent = `Tasks for ${this.formatDate(date)}`;
-
-        // Clear existing content
-        taskDetails.innerHTML = '';
-
-        // Create task items
-        tasks.forEach(task => {
-            const project = this.projects.find(p => p.id === task.projectId);
-            const taskElement = this.createCalendarTaskElement(task, project);
-            taskDetails.appendChild(taskElement);
-        });
-
-        // Show modal
-        modal.classList.add('active');
-    }
-
-    createCalendarTaskElement(task, project) {
-        const taskItem = document.createElement('div');
-        taskItem.className = `calendar-task-item ${task.status}`;
-        
-        // Add overdue class if task is overdue
-        if (task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed') {
-            taskItem.classList.add('overdue');
-        }
-
-        const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
-        const dueDateClass = isOverdue ? 'overdue' : '';
-
-        taskItem.innerHTML = `
-            <div class="calendar-task-status-indicator">
-                <div class="calendar-task-status-dot ${task.status}"></div>
-            </div>
-            <div class="calendar-task-content">
-                <div class="calendar-task-header">
-                    <h4 class="calendar-task-title">${task.title}</h4>
-                    <div class="calendar-task-badges">
-                        <span class="calendar-task-priority-badge ${task.priority}">${task.priority}</span>
-                        <span class="calendar-task-status-badge ${task.status}">${task.status.replace('-', ' ')}</span>
-                    </div>
-                </div>
-                ${task.description ? `<p class="calendar-task-description">${task.description}</p>` : ''}
-                <div class="calendar-task-meta">
-                    <span class="calendar-task-project">${project ? project.name : 'No Project'}</span>
-                    <div class="calendar-task-due-info">
-                        <span class="due-label">Due:</span>
-                        <span class="calendar-task-due-date ${dueDateClass}">
-                            ${task.dueDate ? this.formatDate(task.dueDate) : 'No due date'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        return taskItem;
-    }
-
-    hideCalendarTaskModal() {
-        const modal = document.getElementById('calendarTaskModal');
-        modal.classList.remove('active');
+        // Create a simple modal or alert showing tasks for the selected date
+        const tasksList = tasksForDate.map(task => {
             const project = this.projects.find(p => p.id === task.projectId);
             return `• ${task.title} (${project ? project.name : 'Unknown Project'}) - ${task.priority} priority`;
         }).join('\n');
