@@ -1617,25 +1617,29 @@ select.form-control {
 .tasks-container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-16);
+  gap: var(--space-20);
+  padding: var(--space-8) 0;
 }
 
 .task-item {
   background-color: var(--color-surface);
   border: 1px solid var(--color-card-border);
   border-radius: var(--radius-base);
-  padding: var(--space-16);
+  padding: var(--space-20);
   transition: all var(--duration-fast) var(--ease-standard);
   cursor: pointer;
+  box-shadow: var(--shadow-xs);
 }
 
 .task-item:hover {
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   border-color: var(--color-primary);
+  transform: translateY(-1px);
 }
 
 .task-item.completed {
   opacity: 0.7;
+  background-color: rgba(var(--color-info-rgb), 0.05);
 }
 
 .task-item.completed .task-title {
@@ -1646,7 +1650,8 @@ select.form-control {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: var(--space-12);
+  margin-bottom: var(--space-16);
+  gap: var(--space-16);
 }
 
 .task-title {
@@ -1654,6 +1659,8 @@ select.form-control {
   font-weight: var(--font-weight-medium);
   margin: 0;
   color: var(--color-text);
+  line-height: var(--line-height-tight);
+  flex: 1;
 }
 
 .task-priority {
@@ -1662,28 +1669,34 @@ select.form-control {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   text-transform: uppercase;
+  flex-shrink: 0;
+  border: 1px solid transparent;
 }
 
 .task-priority.high {
   background-color: rgba(var(--color-error-rgb), 0.15);
   color: var(--color-error);
+  border-color: rgba(var(--color-error-rgb), 0.3);
 }
 
 .task-priority.medium {
   background-color: rgba(var(--color-warning-rgb), 0.15);
   color: var(--color-warning);
+  border-color: rgba(var(--color-warning-rgb), 0.3);
 }
 
 .task-priority.low {
   background-color: rgba(var(--color-info-rgb), 0.15);
   color: var(--color-info);
+  border-color: rgba(var(--color-info-rgb), 0.3);
 }
 
 .task-description {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
-  margin-bottom: var(--space-12);
+  margin-bottom: var(--space-16);
   line-height: 1.4;
+  max-width: 80%;
 }
 
 .task-meta {
@@ -1692,10 +1705,14 @@ select.form-control {
   align-items: center;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  padding-top: var(--space-12);
+  border-top: 1px solid var(--color-card-border-inner);
+  margin-top: var(--space-16);
 }
 
 .task-project {
   font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
 }
 
 .task-due-date.overdue {
@@ -1706,59 +1723,90 @@ select.form-control {
 .task-actions {
   display: flex;
   gap: var(--space-8);
-  margin-top: var(--space-12);
+  margin-top: var(--space-16);
+  padding-top: var(--space-12);
+  border-top: 1px solid var(--color-card-border-inner);
+  justify-content: flex-end;
 }
 
 /* Kanban Styles */
 .kanban-board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-24);
+  gap: var(--space-32);
   height: calc(100vh - 200px);
+  padding: var(--space-16) 0;
 }
 
 .kanban-column {
-  background-color: var(--color-secondary);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-card-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-16);
+  padding: var(--space-20);
   display: flex;
   flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.kanban-column:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .kanban-column-title {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   text-align: center;
-  margin: 0 0 var(--space-16) 0;
+  margin: 0 0 var(--space-20) 0;
   color: var(--color-text);
+  padding-bottom: var(--space-12);
+  border-bottom: 2px solid var(--color-card-border-inner);
 }
 
 .kanban-column-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-12);
+  gap: var(--space-16);
   overflow-y: auto;
+  padding: var(--space-8) 0;
 }
 
 .kanban-task {
   background-color: var(--color-surface);
   border: 1px solid var(--color-card-border);
   border-radius: var(--radius-base);
-  padding: var(--space-12);
+  padding: var(--space-16);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-standard);
+  box-shadow: var(--shadow-xs);
+  border-left: 3px solid var(--color-info);
 }
 
 .kanban-task:hover {
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+}
+
+.kanban-task.priority-high {
+  border-left-color: var(--color-error);
+}
+
+.kanban-task.priority-medium {
+  border-left-color: var(--color-warning);
+}
+
+.kanban-task.priority-low {
+  border-left-color: var(--color-info);
 }
 
 .kanban-task-title {
   font-weight: var(--font-weight-medium);
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-12);
   color: var(--color-text);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-tight);
 }
 
 .kanban-task-meta {
@@ -1767,6 +1815,52 @@ select.form-control {
   align-items: center;
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
+  margin-top: var(--space-8);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-card-border-inner);
+}
+
+.view-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-20);
+  margin-bottom: var(--space-24);
+  padding: var(--space-16);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.task-filters {
+  display: flex;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+.task-filters .form-control {
+  width: 160px;
+  font-size: var(--font-size-sm);
+}
+
+.view-toggles {
+  display: flex;
+  gap: var(--space-6);
+  background-color: var(--color-secondary);
+  padding: var(--space-4);
+  border-radius: var(--radius-base);
+}
+
+.view-toggle {
+  padding: var(--space-6) var(--space-12);
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.view-toggle.active {
+  background-color: var(--color-primary);
+  color: var(--color-btn-primary-text);
+  box-shadow: var(--shadow-xs);
 }
 
 /* Modal Styles */
