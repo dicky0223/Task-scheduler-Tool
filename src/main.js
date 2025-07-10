@@ -107,6 +107,11 @@ class ProjectManager {
             this.renderTasks();
         });
 
+        // Due date sorting
+        document.getElementById('sortDueDate').addEventListener('change', () => {
+            this.renderTasks();
+        });
+
         // View toggles
         document.querySelectorAll('.view-toggle').forEach(toggle => {
             toggle.addEventListener('click', (e) => {

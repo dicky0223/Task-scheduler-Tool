@@ -1946,6 +1946,16 @@ select.form-control {
   font-size: var(--font-size-sm);
 }
 
+.task-sort-controls {
+  display: flex;
+  align-items: center;
+}
+
+.task-sort-controls .form-control {
+  width: 200px;
+  font-size: var(--font-size-sm);
+}
+
 .view-toggles {
   display: flex;
   gap: var(--space-6);
