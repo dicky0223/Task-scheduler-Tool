@@ -29,18 +29,88 @@ A modern, lightweight project management application built with vanilla JavaScri
 - **Interactive Calendar**: Click on dates to view detailed task information
 - **Due Date Highlighting**: Visual indicators for tasks and deadlines
 
+### 🔍 Search & Organization
+- **Global Search**: Search across all projects and tasks in real-time
+- **Smart Filtering**: Filter tasks by project, priority, status, and due date
+- **Sorting Options**: Sort tasks by due date, priority, or creation date
+
 ### 🎨 User Experience
 - **Dark/Light Theme**: Toggle between themes with persistent preference
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
-- **Global Search**: Search across all projects and tasks
 - **Toast Notifications**: Real-time feedback for user actions
 - **Intuitive Navigation**: Clean sidebar navigation with visual icons
 
 ## 🚀 Getting Started
 
-### For General Users (Easiest Method)
+### Running with a Local Server (Recommended)
 
-If you just want to use ProjectFlow without any technical setup:
+For the best experience and to avoid browser security restrictions, we recommend running ProjectFlow with a local server. This ensures all features work correctly, including data persistence and search functionality.
+
+#### Option 1: VS Code Live Server (Easiest for most users)
+
+1. **Install VS Code** (if you don't have it)
+   - Download from [https://code.visualstudio.com/](https://code.visualstudio.com/)
+   - Install and open VS Code
+
+2. **Install Live Server Extension**
+   - Open VS Code
+   - Go to Extensions (Ctrl+Shift+X or Cmd+Shift+X)
+   - Search for "Live Server" by Ritwick Dey
+   - Click "Install"
+
+3. **Open and Run ProjectFlow**
+   - Download the ProjectFlow project files
+   - Extract to a folder on your computer
+   - In VS Code: File → Open Folder → Select the ProjectFlow folder
+   - Right-click on `index.html` in the file explorer
+   - Select "Open with Live Server"
+   - ProjectFlow will automatically open in your browser at `http://127.0.0.1:5500`
+
+#### Option 2: Python HTTP Server
+
+1. **Ensure Python is installed**
+   - Check by running `python --version` or `python3 --version` in your terminal
+   - If not installed, download from [https://python.org](https://python.org)
+
+2. **Run the server**
+   - Download and extract ProjectFlow to a folder
+   - Open terminal/command prompt
+   - Navigate to the ProjectFlow folder:
+     ```bash
+     cd path/to/projectflow
+     ```
+   - Start the server:
+     ```bash
+     # For Python 3
+     python -m http.server 8000
+     
+     # For Python 2 (if needed)
+     python -m SimpleHTTPServer 8000
+     ```
+   - Open your browser and go to `http://localhost:8000`
+
+#### Option 3: Node.js Development Server (For developers)
+
+If you have Node.js installed and want the full development experience:
+
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+2. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+3. **Open your browser**
+   Navigate to `http://localhost:3000`
+
+### Quick Start (Direct File Opening)
+
+⚠️ **Note**: Opening `index.html` directly in your browser may cause some limitations due to browser security restrictions. For full functionality, please use one of the local server methods above.
+
+If you want to quickly try ProjectFlow without setting up a server:
 
 1. **Download the project**
    - Click the green "Code" button on GitHub and select "Download ZIP"
@@ -49,61 +119,11 @@ If you just want to use ProjectFlow without any technical setup:
 2. **Open the application**
    - Navigate to the extracted folder
    - Double-click on `index.html` to open it in your web browser
-   - That's it! ProjectFlow will start immediately
 
 3. **Start using ProjectFlow**
    - The application will load with sample data to help you get started
    - Create your first project by clicking "New Project"
    - Add tasks and start managing your workflow
-
-### For Developers
-
-If you want to run the development server or contribute to the project:
-
-#### Prerequisites
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-- Node.js (for development server)
-
-#### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/projectflow.git
-   cd projectflow
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open your browser**
-   Navigate to `http://localhost:3000` to view the application
-
-#### Windows PowerShell Issues
-
-If you encounter PowerShell execution policy errors on Windows:
-
-**Option 1: Use Command Prompt instead**
-```cmd
-npm run dev
-```
-
-**Option 2: Temporarily change PowerShell execution policy**
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-npm run dev
-```
-
-**Option 3: Use VS Code integrated terminal**
-- Open the project folder in VS Code
-- Use Terminal → New Terminal
-- Run `npm run dev`
 
 ## 📖 Usage Guide
 
@@ -112,7 +132,8 @@ npm run dev
 2. **Create a Project**: Click "New Project" to create your first project
 3. **Add Tasks**: Navigate to the Tasks section and create tasks for your projects
 4. **Track Progress**: Use the Kanban board or list view to manage task progress
-5. **Data Migration**: If you previously used ProjectFlow, your data will be automatically migrated from Local Storage to IndexedDB on first load
+5. **Search & Filter**: Use the global search bar to find specific projects or tasks
+6. **Data Migration**: If you previously used ProjectFlow, your data will be automatically migrated from Local Storage to IndexedDB on first load
 
 ### Navigation
 - **Dashboard** (📊): Overview of all projects and tasks with statistics
@@ -130,6 +151,7 @@ npm run dev
 - **List View**: Traditional task list with sorting and filtering
 - **Kanban Board**: Visual workflow management with drag-and-drop columns
 - **Quick Actions**: Mark tasks complete, edit details, or delete tasks
+- **Search Tasks**: Use the global search to find tasks by title or description
 
 ### Calendar Features
 - **Monthly Navigation**: Use arrow buttons to navigate between months
@@ -241,10 +263,11 @@ ProjectFlow automatically handles migration from Local Storage to IndexedDB:
 - **Due Today**: Tasks with today's due date
 
 ### Filtering and Search
+- **Global Search**: Real-time search across project names, descriptions, and task titles
 - **Project Filter**: Show tasks from specific projects
 - **Priority Filter**: Filter by High, Medium, or Low priority
 - **Status Filter**: Filter by To Do, In Progress, or Completed
-- **Global Search**: Search task titles and descriptions
+- **Due Date Sorting**: Sort tasks by due date to prioritize urgent items
 
 ### Theme System
 - **Automatic Detection**: Respects system preference for dark/light mode
