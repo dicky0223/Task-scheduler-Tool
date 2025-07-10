@@ -27,6 +27,7 @@ class ProjectManager {
         this.tasks = [];
         this.currentView = 'dashboard';
         this.currentDate = new Date();
+        this.globalSearchQuery = '';
         
         this.init();
     }
@@ -414,28 +415,21 @@ class ProjectManager {
 
     // Utility functions
     handleGlobalSearch(query) {
-        if (!query.trim()) return;
+        this.globalSearchQuery = query.trim().toLowerCase();
 
-        const results = [];
-        
-        // Search projects
-        this.projects.forEach(project => {
-            if (project.name.toLowerCase().includes(query.toLowerCase()) ||
-                (project.description && project.description.toLowerCase().includes(query.toLowerCase()))) {
-                results.push({ type: 'project', item: project });
-            }
-        });
-
-        // Search tasks
-        this.tasks.forEach(task => {
-            if (task.title.toLowerCase().includes(query.toLowerCase()) ||
-                (task.description && task.description.toLowerCase().includes(query.toLowerCase()))) {
-                results.push({ type: 'task', item: task });
-            }
-        });
-
-        // Show search results (you can implement a dropdown or modal for this)
-        console.log('Search results:', results);
+        // Re-render the current view with search filter applied
+        switch (this.currentView) {
+            case 'projects':
+                this.renderProjects();
+                break;
+            case 'tasks':
+                this.renderTasks();
+                break;
+            case 'dashboard':
+                // Switch to projects view to show search results
+                this.switchView('projects');
+                break;
+        }
     }
 }
 
