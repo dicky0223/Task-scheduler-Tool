@@ -351,9 +351,6 @@ export function renderTasks(projects, tasks, onEditTask, onDeleteTask, onToggleT
         filteredTasks = filteredTasks.filter(task => task.status === statusFilter);
     }
 
-    // Apply sorting
-    const sortDueDate = document.getElementById('sortDueDate').value;
-    
     if (filteredTasks.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
@@ -365,32 +362,16 @@ export function renderTasks(projects, tasks, onEditTask, onDeleteTask, onToggleT
         return;
     }
 
-    // Sort tasks based on selected sorting option
+    // Sort tasks by due date and priority
     filteredTasks.sort((a, b) => {
-        if (sortDueDate === 'asc') {
-            // Soonest first - tasks without due dates go to the end
-            if (a.dueDate && b.dueDate) {
-                const dateComparison = createLocalDate(a.dueDate) - createLocalDate(b.dueDate);
-                if (dateComparison !== 0) return dateComparison;
-            } else if (a.dueDate && !b.dueDate) return -1;
-            else if (!a.dueDate && b.dueDate) return 1;
-        } else if (sortDueDate === 'desc') {
-            // Latest first - tasks without due dates go to the end
-            if (a.dueDate && b.dueDate) {
-                const dateComparison = createLocalDate(b.dueDate) - createLocalDate(a.dueDate);
-                if (dateComparison !== 0) return dateComparison;
-            } else if (a.dueDate && !b.dueDate) return -1;
-            else if (!a.dueDate && b.dueDate) return 1;
-        } else {
-            // Default sorting: due date ascending, then priority
-            if (a.dueDate && b.dueDate) {
-                const dateComparison = createLocalDate(a.dueDate) - createLocalDate(b.dueDate);
-                if (dateComparison !== 0) return dateComparison;
-            } else if (a.dueDate && !b.dueDate) return -1;
-            else if (!a.dueDate && b.dueDate) return 1;
-        }
+        // First sort by due date
+        if (a.dueDate && b.dueDate) {
+            const dateComparison = createLocalDate(a.dueDate) - createLocalDate(b.dueDate);
+            if (dateComparison !== 0) return dateComparison;
+        } else if (a.dueDate) return -1;
+        else if (b.dueDate) return 1;
 
-        // If due dates are the same (or both have no due date), sort by priority
+        // Then by priority
         const priorityOrder = { high: 3, medium: 2, low: 1 };
         return priorityOrder[b.priority] - priorityOrder[a.priority];
     });
