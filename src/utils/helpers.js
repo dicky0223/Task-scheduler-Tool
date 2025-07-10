@@ -1,15 +1,27 @@
 // Utility helper functions
+export function createLocalDate(dateString) {
+    if (!dateString) return null;
+    
+    // Parse the date string (YYYY-MM-DD) and create a Date object in local timezone
+    const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
+    return new Date(year, month - 1, day); // month is 0-indexed in Date constructor
+}
+
 export function formatDate(date) {
-    return date.toISOString().split('T')[0];
+    // Extract local date components to avoid timezone conversion issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is 0-indexed
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 export function isToday(date) {
     const today = new Date();
-    return date.toDateString() === today.toDateString();
+    return formatDate(date) === formatDate(today);
 }
 
 export function formatRelativeTime(dateString) {
-    const date = new Date(dateString);
+    const date = createLocalDate(dateString) || new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
 
@@ -49,4 +61,17 @@ export function getTasksForDate(tasks, dateString) {
 export function getTasksDueToday(tasks) {
     const today = formatDate(new Date());
     return getTasksForDate(tasks, today);
+}
+
+export function isDateOverdue(dateString) {
+    if (!dateString) return false;
+    
+    const dueDate = createLocalDate(dateString);
+    const today = new Date();
+    
+    // Set both dates to start of day for accurate comparison
+    const dueDateStart = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    return dueDateStart < todayStart;
 }

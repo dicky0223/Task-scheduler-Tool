@@ -1,5 +1,5 @@
 // UI rendering functions
-import { formatDate, isToday, formatRelativeTime, getStatusClass, getStatusIcon, getTasksForDate, getTasksDueToday } from '../utils/helpers.js';
+import { formatDate, isToday, formatRelativeTime, getStatusClass, getStatusIcon, getTasksForDate, getTasksDueToday, createLocalDate, isDateOverdue } from '../utils/helpers.js';
 import { showToast } from './toast.js';
 
 export function renderDashboard(projects, tasks) {
@@ -155,7 +155,7 @@ export function addCalendarClickListeners(projects, tasks, onDateClick) {
 
 export function displayTasksForDate(dateString, projects, tasks) {
     const tasksForDay = getTasksForDate(tasks, dateString);
-    const formattedDate = new Date(dateString).toLocaleDateString('en-US', {
+    const formattedDate = createLocalDate(dateString).toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -241,12 +241,19 @@ export function renderProjects(projects, tasks, onEditProject, onDeleteProject) 
         const overdueTasks = projectTasks.filter(task => 
             task.status !== 'completed' && 
             task.dueDate && 
-            new Date(task.dueDate) < new Date()
+            isDateOverdue(task.dueDate)
         ).length;
 
-        const dueDate = project.dueDate ? new Date(project.dueDate) : null;
-        const isOverdue = dueDate && dueDate < new Date() && project.status !== 'completed';
-        const daysUntilDue = dueDate ? Math.ceil((dueDate - new Date()) / (1000 * 60 * 60 * 24)) : null;
+        const dueDate = project.dueDate ? createLocalDate(project.dueDate) : null;
+        const isOverdue = project.dueDate && isDateOverdue(project.dueDate) && project.status !== 'completed';
+        
+        let daysUntilDue = null;
+        if (dueDate) {
+            const today = new Date();
+            const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const dueDateStart = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+            daysUntilDue = Math.ceil((dueDateStart - todayStart) / (1000 * 60 * 60 * 24));
+        }
 
         let progressClass = 'progress-poor';
         if (progress >= 80) progressClass = 'progress-excellent';
@@ -300,12 +307,12 @@ export function renderProjects(projects, tasks, onEditProject, onDeleteProject) 
                     <div class="project-timeline">
                         <div class="timeline-item">
                             <span class="timeline-label">Created:</span>
-                            <span class="timeline-value">${new Date(project.createdDate).toLocaleDateString()}</span>
+                            <span class="timeline-value">${createLocalDate(project.createdDate).toLocaleDateString()}</span>
                         </div>
                         ${project.dueDate ? `
                             <div class="timeline-item ${isOverdue ? 'upcoming' : ''}">
                                 <span class="timeline-label">Due:</span>
-                                <span class="timeline-value ${isOverdue ? 'overdue' : ''}">${new Date(project.dueDate).toLocaleDateString()}</span>
+                                <span class="timeline-value ${isOverdue ? 'overdue' : ''}">${dueDate.toLocaleDateString()}</span>
                                 ${daysUntilDue !== null ? `<span class="timeline-value">(${daysUntilDue > 0 ? `${daysUntilDue} days left` : `${Math.abs(daysUntilDue)} days overdue`})</span>` : ''}
                             </div>
                         ` : ''}
@@ -359,7 +366,7 @@ export function renderTasks(projects, tasks, onEditTask, onDeleteTask, onToggleT
     filteredTasks.sort((a, b) => {
         // First sort by due date
         if (a.dueDate && b.dueDate) {
-            const dateComparison = new Date(a.dueDate) - new Date(b.dueDate);
+            const dateComparison = createLocalDate(a.dueDate) - createLocalDate(b.dueDate);
             if (dateComparison !== 0) return dateComparison;
         } else if (a.dueDate) return -1;
         else if (b.dueDate) return 1;
@@ -371,7 +378,7 @@ export function renderTasks(projects, tasks, onEditTask, onDeleteTask, onToggleT
 
     container.innerHTML = filteredTasks.map(task => {
         const project = projects.find(p => p.id === task.projectId);
-        const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
+        const isOverdue = task.dueDate && isDateOverdue(task.dueDate) && task.status !== 'completed';
         
         return `
             <div class="task-item ${task.status === 'completed' ? 'completed' : ''}" onclick="window.projectManager.editTask('${task.id}')">
@@ -387,7 +394,7 @@ export function renderTasks(projects, tasks, onEditTask, onDeleteTask, onToggleT
                         <span class="task-project">${project?.name || 'No Project'}</span>
                         ${task.dueDate ? `
                             <span class="task-due-date ${isOverdue ? 'overdue' : ''}">
-                                Due: ${new Date(task.dueDate).toLocaleDateString()}
+                                Due: ${createLocalDate(task.dueDate).toLocaleDateString()}
                                 ${isOverdue ? ' (Overdue)' : ''}
                             </span>
                         ` : ''}
