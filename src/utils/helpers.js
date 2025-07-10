@@ -3,42 +3,9 @@ export function formatDate(date) {
     return date.toISOString().split('T')[0];
 }
 
-export function getLocalDateFromYYYYMMDD(dateString) {
-    if (!dateString) return null;
-    
-    // Parse the date string as YYYY-MM-DD and create a local date
-    const [year, month, day] = dateString.split('-').map(Number);
-    // Month is 0-indexed in JavaScript Date constructor
-    // Set time to noon to avoid timezone issues
-    return new Date(year, month - 1, day, 12, 0, 0);
-}
-
-export function formatDateToDDMMYYYY(dateObject) {
-    if (!dateObject || !(dateObject instanceof Date)) return '';
-    
-    const day = String(dateObject.getDate()).padStart(2, '0');
-    const month = String(dateObject.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
-    const year = dateObject.getFullYear();
-    
-    return `${day}/${month}/${year}`;
-}
-
-export function getTodayYYYYMMDDLocal() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-}
-
 export function isToday(date) {
-    if (!date) return false;
-    
     const today = new Date();
-    return date.getFullYear() === today.getFullYear() &&
-           date.getMonth() === today.getMonth() &&
-           date.getDate() === today.getDate();
+    return date.toDateString() === today.toDateString();
 }
 
 export function formatRelativeTime(dateString) {
@@ -80,6 +47,6 @@ export function getTasksForDate(tasks, dateString) {
 }
 
 export function getTasksDueToday(tasks) {
-    const today = getTodayYYYYMMDDLocal();
+    const today = formatDate(new Date());
     return getTasksForDate(tasks, today);
 }
