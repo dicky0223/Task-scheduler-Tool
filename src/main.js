@@ -20,6 +20,25 @@ import {
 } from './ui/renderers.js';
 import { getStatusClass } from './utils/helpers.js';
 
+
+function normalizeDate(dateString) {
+    if (!dateString) return null;
+    
+    // 分解日期字符串避免时区转换
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+        return parts[0] + '-' + parts[1].padStart(2, '0') + '-' + parts[2].padStart(2, '0');
+    }
+    
+    // 如果是 Date 对象，转换为本地日期字符串
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+}
+
 // ProjectFlow - Project Management Application
 class ProjectManager {
     constructor() {
