@@ -351,9 +351,6 @@ export function renderTasks(projects, tasks, onEditTask, onDeleteTask, onToggleT
         filteredTasks = filteredTasks.filter(task => task.status === statusFilter);
     }
 
-    // Apply sorting
-    const sortDueDate = document.getElementById('sortDueDate').value;
-    
     if (filteredTasks.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
@@ -365,26 +362,22 @@ export function renderTasks(projects, tasks, onEditTask, onDeleteTask, onToggleT
         return;
     }
 
+    // Get current sort order from the ProjectManager instance
+    const sortOrder = window.projectManager?.currentSortOrder || 'asc';
+    
     // Sort tasks based on selected sorting option
     filteredTasks.sort((a, b) => {
-        if (sortDueDate === 'asc') {
+        if (sortOrder === 'asc') {
             // Soonest first - tasks without due dates go to the end
             if (a.dueDate && b.dueDate) {
                 const dateComparison = createLocalDate(a.dueDate) - createLocalDate(b.dueDate);
                 if (dateComparison !== 0) return dateComparison;
             } else if (a.dueDate && !b.dueDate) return -1;
             else if (!a.dueDate && b.dueDate) return 1;
-        } else if (sortDueDate === 'desc') {
+        } else if (sortOrder === 'desc') {
             // Latest first - tasks without due dates go to the end
             if (a.dueDate && b.dueDate) {
                 const dateComparison = createLocalDate(b.dueDate) - createLocalDate(a.dueDate);
-                if (dateComparison !== 0) return dateComparison;
-            } else if (a.dueDate && !b.dueDate) return -1;
-            else if (!a.dueDate && b.dueDate) return 1;
-        } else {
-            // Default sorting: due date ascending, then priority
-            if (a.dueDate && b.dueDate) {
-                const dateComparison = createLocalDate(a.dueDate) - createLocalDate(b.dueDate);
                 if (dateComparison !== 0) return dateComparison;
             } else if (a.dueDate && !b.dueDate) return -1;
             else if (!a.dueDate && b.dueDate) return 1;

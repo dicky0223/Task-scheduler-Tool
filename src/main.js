@@ -26,6 +26,7 @@ class ProjectManager {
         this.projects = [];
         this.tasks = [];
         this.currentView = 'dashboard';
+        this.currentSortOrder = 'asc'; // Default to soonest first
         this.currentDate = new Date();
         
         this.init();
@@ -107,9 +108,18 @@ class ProjectManager {
             this.renderTasks();
         });
 
-        // Due date sorting
-        document.getElementById('sortDueDate').addEventListener('change', () => {
-            this.renderTasks();
+        // Due date sorting buttons
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const sortOrder = e.currentTarget.dataset.sort;
+                this.currentSortOrder = sortOrder;
+                
+                // Update active state
+                document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                
+                this.renderTasks();
+            });
         });
 
         // View toggles

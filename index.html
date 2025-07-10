@@ -144,11 +144,14 @@
                             </select>
                         </div>
                         <div class="task-sort-controls">
-                            <select class="form-control" id="sortDueDate">
-                                <option value="default">Sort by Due Date (Default)</option>
-                                <option value="asc">Soonest First</option>
-                                <option value="desc">Latest First</option>
-                            </select>
+                            <div class="sort-buttons">
+                                <button class="btn btn--outline btn--sm sort-btn active" id="sortSoonest" data-sort="asc">
+                                    <span class="sort-icon">📅</span>Soonest First
+                                </button>
+                                <button class="btn btn--outline btn--sm sort-btn" id="sortLatest" data-sort="desc">
+                                    <span class="sort-icon">📅</span>Latest First
+                                </button>
+                            </div>
                         </div>
                         <div class="view-toggles">
                             <button class="btn btn--outline btn--sm view-toggle active" data-view-type="list">List</button>
