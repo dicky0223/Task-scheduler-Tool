@@ -1,5 +1,5 @@
 // UI rendering functions
-import { formatDate, isToday, formatRelativeTime, getStatusClass, getStatusIcon, getTasksForDate, getTasksDueToday, parseLocalDate, isOverdue, getDaysUntilDue } from '../utils/helpers.js';
+import { formatDate, isToday, formatRelativeTime, getStatusClass, getStatusIcon, getTasksForDate, getTasksDueToday } from '../utils/helpers.js';
 import { showToast } from './toast.js';
 
 export function renderDashboard(projects, tasks) {
@@ -239,12 +239,14 @@ export function renderProjects(projects, tasks, onEditProject, onDeleteProject) 
         const totalTasks = projectTasks.length;
         const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
         const overdueTasks = projectTasks.filter(task => 
-            isOverdue(task.dueDate, task.status)
+            task.status !== 'completed' && 
+            task.dueDate && 
+            new Date(task.dueDate) < new Date()
         ).length;
 
-        const dueDate = project.dueDate ? parseLocalDate(project.dueDate) : null;
-        const isProjectOverdue = isOverdue(project.dueDate, project.status);
-        const daysUntilDue = getDaysUntilDue(project.dueDate);
+        const dueDate = project.dueDate ? new Date(project.dueDate) : null;
+        const isOverdue = dueDate && dueDate < new Date() && project.status !== 'completed';
+        const daysUntilDue = dueDate ? Math.ceil((dueDate - new Date()) / (1000 * 60 * 60 * 24)) : null;
 
         let progressClass = 'progress-poor';
         if (progress >= 80) progressClass = 'progress-excellent';
@@ -301,9 +303,9 @@ export function renderProjects(projects, tasks, onEditProject, onDeleteProject) 
                             <span class="timeline-value">${new Date(project.createdDate).toLocaleDateString()}</span>
                         </div>
                         ${project.dueDate ? `
-                            <div class="timeline-item ${isProjectOverdue ? 'upcoming' : ''}">
+                            <div class="timeline-item ${isOverdue ? 'upcoming' : ''}">
                                 <span class="timeline-label">Due:</span>
-                                <span class="timeline-value ${isProjectOverdue ? 'overdue' : ''}">${dueDate.toLocaleDateString()}</span>
+                                <span class="timeline-value ${isOverdue ? 'overdue' : ''}">${new Date(project.dueDate).toLocaleDateString()}</span>
                                 ${daysUntilDue !== null ? `<span class="timeline-value">(${daysUntilDue > 0 ? `${daysUntilDue} days left` : `${Math.abs(daysUntilDue)} days overdue`})</span>` : ''}
                             </div>
                         ` : ''}
@@ -357,7 +359,7 @@ export function renderTasks(projects, tasks, onEditTask, onDeleteTask, onToggleT
     filteredTasks.sort((a, b) => {
         // First sort by due date
         if (a.dueDate && b.dueDate) {
-            const dateComparison = parseLocalDate(a.dueDate) - parseLocalDate(b.dueDate);
+            const dateComparison = new Date(a.dueDate) - new Date(b.dueDate);
             if (dateComparison !== 0) return dateComparison;
         } else if (a.dueDate) return -1;
         else if (b.dueDate) return 1;
@@ -369,7 +371,7 @@ export function renderTasks(projects, tasks, onEditTask, onDeleteTask, onToggleT
 
     container.innerHTML = filteredTasks.map(task => {
         const project = projects.find(p => p.id === task.projectId);
-        const isTaskOverdue = isOverdue(task.dueDate, task.status);
+        const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
         
         return `
             <div class="task-item ${task.status === 'completed' ? 'completed' : ''}" onclick="window.projectManager.editTask('${task.id}')">
@@ -384,9 +386,9 @@ export function renderTasks(projects, tasks, onEditTask, onDeleteTask, onToggleT
                     <div>
                         <span class="task-project">${project?.name || 'No Project'}</span>
                         ${task.dueDate ? `
-                            <span class="task-due-date ${isTaskOverdue ? 'overdue' : ''}">
-                                Due: ${parseLocalDate(task.dueDate).toLocaleDateString()}
-                                ${isTaskOverdue ? ' (Overdue)' : ''}
+                            <span class="task-due-date ${isOverdue ? 'overdue' : ''}">
+                                Due: ${new Date(task.dueDate).toLocaleDateString()}
+                                ${isOverdue ? ' (Overdue)' : ''}
                             </span>
                         ` : ''}
                     </div>

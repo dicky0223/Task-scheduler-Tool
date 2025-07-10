@@ -50,35 +50,3 @@ export function getTasksDueToday(tasks) {
     const today = formatDate(new Date());
     return getTasksForDate(tasks, today);
 }
-
-// Parse date string as local date to avoid timezone shifting
-export function parseLocalDate(dateString) {
-    if (!dateString) return null;
-    
-    // Split the date string and create a date in local timezone
-    const [year, month, day] = dateString.split('-').map(Number);
-    return new Date(year, month - 1, day); // month is 0-indexed in Date constructor
-}
-
-// Check if a date is overdue (past today in local timezone)
-export function isOverdue(dateString, status = null) {
-    if (!dateString || status === 'completed') return false;
-    
-    const dueDate = parseLocalDate(dateString);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to start of today
-    
-    return dueDate < today;
-}
-
-// Get days until due date (negative if overdue)
-export function getDaysUntilDue(dateString) {
-    if (!dateString) return null;
-    
-    const dueDate = parseLocalDate(dateString);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to start of today
-    
-    const diffTime = dueDate - today;
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-}
