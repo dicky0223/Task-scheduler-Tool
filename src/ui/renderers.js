@@ -357,15 +357,6 @@ export function renderProjects(projects, tasks, onEditProject, onDeleteProject) 
 export function renderTasks(projects, tasks, onEditTask, onDeleteTask, onToggleTaskStatus) {
     const container = document.getElementById('tasksContainer');
     let filteredTasks = [...tasks];
-    
-    // Apply global search filter first
-    const globalSearchQuery = window.projectManager?.globalSearchQuery || '';
-    if (globalSearchQuery) {
-        filteredTasks = filteredTasks.filter(task => 
-            task.title.toLowerCase().includes(globalSearchQuery) ||
-            (task.description && task.description.toLowerCase().includes(globalSearchQuery))
-        );
-    }
 
     // Apply filters
     const projectFilter = document.getElementById('filterProject').value;
@@ -383,22 +374,11 @@ export function renderTasks(projects, tasks, onEditTask, onDeleteTask, onToggleT
     }
 
     if (filteredTasks.length === 0) {
-        let emptyMessage = 'No tasks found';
-        let emptyDescription = 'Create a new task or adjust your filters';
-        
-        if (globalSearchQuery) {
-            emptyMessage = 'No tasks found';
-            emptyDescription = `No tasks match your search for "${globalSearchQuery}"`;
-        }
-        
         container.innerHTML = `
             <div class="empty-state">
-                <h3>${emptyMessage}</h3>
-                <p>${emptyDescription}</p>
-                ${globalSearchQuery ? 
-                    `<button class="btn btn--secondary" onclick="document.getElementById('globalSearch').value = ''; window.projectManager.handleGlobalSearch('');">Clear Search</button>` :
-                    `<button class="btn btn--primary" onclick="window.projectManager.openTaskModal()">Create Task</button>`
-                }
+                <h3>No tasks found</h3>
+                <p>Create a new task or adjust your filters</p>
+                <button class="btn btn--primary" onclick="window.projectManager.openTaskModal()">Create Task</button>
             </div>
         `;
         return;
